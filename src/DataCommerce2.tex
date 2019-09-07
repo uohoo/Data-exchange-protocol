@@ -1,0 +1,266 @@
+% !TeX spellcheck = en_GB
+\documentclass[]{article}
+\usepackage{graphicx}
+\usepackage{csquotes}
+\usepackage[english]{babel}
+\usepackage[hyphens]{url}
+\usepackage{bookmark,hyperref}
+\hypersetup{
+	pdfauthor={},
+	pdftitle={Blockchain-based provably fair data commerce with representative sample checking},
+	pdfsubject={},
+	colorlinks=true,
+	linkcolor=black,
+	citecolor=black,
+	urlcolor=black
+}
+\usepackage[backend=biber,hyperref=true,backref=false,style=numeric]{biblatex}
+% \addbibresource{main.bib}
+%\bibliographyystyle{}
+%opening
+\title{Blockchain-based provably fair data commerce with representative sample checking}
+\author{}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+bla bla bla....
+\end{abstract}
+
+\section{Introduction}
+%IoT -> data. REF about Statistics about estimation of data creation.
+The growth of IoT devices is increasing the total data generated globally. It's estimated that the number of devices will increase exponentially (Buscar REF) from A to B in 2020 (REF). New generated data is valuable and can be used in many cases for enterprises or directly for user consumption. Process optimization or consumer preferences knowledge are two standard examples. In general, many existing and new services and business models could benefit from it. 
+% ? Individual consumers can get data for final purposes like entertainment. No demasiado realista a no ser que sea para cosas ilegales...
+
+%MarketPlaces -> Trust
+REF: Comparison of trust sources of an online market-maker in the e-marketplace: buyer's and seller's perspectives: https://www.tandfonline.com/doi/abs/10.1080/08874417.2006.11645942
+
+The creation of marketplaces helps to join interests between producers and consumers in a platform where both parties can meet each other and trade information. It solves the integration problem of connecting users and providers but many other drawbacks still exist. This paper will focus on the lack of trust in data providers: a problem that still cannot be solved without previous confidence establishment. It manifests mainly as an entry barrier to providers in the market, hurting competence and thus reducing utility for consumers.
+A proposed solution for this problem is using a reward/penalty system where malicious actors are penalized and legit ones are rewarded by the marketplace, smoothing the trust building and mantaining process. Although seeming to work well in the long run, it can be difficult to establish stable incentives and it hinders anonymity. On top of it, it's useless when new actors appears and they have not previous reputation.
+
+%TODO comentar que habitualmetn aquest problema el mercat l'arregla, pero son barreres. A més a més obliga a una estructura permissionada de proveidors per evitar fakes totals etc.
+%TODO Al final comentar que no serveix per dades real-time, de moment. Això de fet desquadra fortament amb el tema IoT de la intro.
+
+\section{State of the Art}
+%TODO 
+\cite{ALABI201723}
+
+Bibliography:
+%https://www.igi-global.com/article/building-initial-trust-in-an-intermediary-in-b2c-online-marketplaces/201006
+%https://www.researchgate.net/publication/323748662_The_limits_of_trust-free_systems_A_literature_review_on_blockchain_technology_and_trust_in_the_sharing_economy
+% OK https://www.sciencedirect.com/science/article/pii/S0268401217305352
+% OK https://www.sciencedirect.com/science/article/pii/S1567422317300911
+% OK https://www.sciencedirect.com/science/article/pii/S0747563216307191
+
+%OK https://pubsonline.informs.org/doi/abs/10.1287/isre.1040.0015
+%https://www.researchgate.net/publication/314078939_To_Sell_or_Not_to_Sell_Exploring_Seller's_Trust_and_Risk_of_Chargeback_Fraud_in_Cross-Border_Electronic_Commerce
+%https://www.springerprofessional.de/online-payments-strategy-how-third-party-internet-seals-of-appro/15502132
+
+%TODO jose mirar papers
+
+\section{Data Exchange with Random Verification}
+
+% state the problem and our solution
+\subsection{Approach/INTRO general}
+% Trusted third party: ETH network 
+Achieving the exchange of virtual products with many parties while minimizing risks is the main goal of virtual commerce. In order to exchange value safely it is essential that i) buyer is getting the product that it is paying for and ii) seller is paid. This is achieved, many times, without any strict protocols, just by existing trust. Counterparties know each other and are confident, by previous experience or by future interest, that no intent to scam will be made by other parties. When stronger assurance than that provided by direct mutual trust is needed, a trusted third party (TTP), whom all the parties trust, guarantees the process is carried out to all parties. It solves the crucial aspect of minimizing risk but comes with an extra cost for all parties and the need for a viable TTP.
+% TODO Añadir alguna ref
+
+Bitcoin and cryptocurrencies in general can be seen as a paradigm shift when it comes to the need of trusted third parties for something as critical as payment processing. The use of public-key cryptography provides strong assurance and easy verifiability when attributing actions (payments) to specific participants (cryptocurrency owners). Through Blockchain protocol, all participants in the network, can maintain a synchronized version of a database (who owns what) without the need for a central authority (TPP) that guarantees integrity, fairness or availability. 
+%(FER UNA MICA DE INTRO SOBRE BLOCKCHAIN? BITCOIN?)
+
+The protocol hereby presented for data exchange has three main goals, including the ones previously stated for virtual commerce:
+i) that buyer gets a fair sample of the data being traded before committing itself. The protocol must ensure that the whole data is statistically consistent with this sample and so that the sample is not influenced by the seller. Thus the buyer can assess its value realistically.
+ii) that seller is paid, if and only if, buyer has access to the data. Thus the transaction is correct: the buyer cannot get the data without paying and the seller cannot get paid without giving away the data.
+iii) that the solution is cost-efficient. Thus the cost of running the protocol is much smaller than the value of the data it can trade. Due to high fees on a per-byte basis when using the ethereum network, protocol cost must remain mostly fixed and amount of data saved on the network mostly independent of the quantity of real data traded.
+
+REF1: $http://www.fon.hum.uva.nl/rob/Courses/InformationInSpeech/CDROM/Literature/LOTwinterschool2006/szabo.best.vwh.net/smart_contracts_2.html , 1996]$
+REF2:
+REF A BTC paper?
+
+\subsection{Design}
+% TODO ESQUEMA GENERAL D'ESTATS I FASES, SEPARANT EL QUE VA PER SC y OFF-BC
+The notation in the protocol:
+\begin{itemize}
+	\item $n$: number of data samples	
+	\item $D = d_1 ... d_n$: data samples
+	\item $s$: cryptographically secure random number for key creation (salt)
+	\item $K = k_1 ... k_n$: encryption keys for data samples, such that $k_n = Hash(n + s)$
+	\item $C = c_1 ... c_n$: encrypted data samples, such that $c_n = Encrypt_k_n(d_n)$	
+	\item $MR(K)$: root of the Merkle hash tree containing all generated keys
+	\item $MR(C)$: root of the Merkle hash tree containing all encrypted samples
+	\item $v$: number of data samples to be revealed
+	\item $R = r_1 ... r_v$: indexes of the samples to be revealed
+	\item $p$: price
+	\item $MP$: Merkle proof. Merkle hash tree leaves needed for an auditor to verify an item is inside a Merkle hash tree knowing only its root.
+\end{itemize}
+
+%\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{DataMarketProtocolBW2}
+
+\subsubsection{Step 1. Data preparation and Smart Contract creation (seller)}
+The seller must prepare the data, splitting it in different samples. There will be cases where data splits "naturally" (e.g. records of a database, where each record is a sample) and others where samples must be generated from a compact source of data (video).
+Data must be sorted alphabetically, using the most valuable variable, in case there are multiple ones. This will avoid a potential attack explained in analysis section (5.1).
+A random seed number, S, must be generated in order to create the keys that will encrypt each sample of the whole data separately. Once data is divided into different samples and a seed is created, buyer must create two Merkle Hash Trees:
+\begin{itemize}
+	\item Encrypted data Merkle Tree: Each leaf will be an encrypted sample.
+	\item Keys Merkle Tree: Each leaf will be the key that decipher the same element in the Encrypted data Merkle hash tree.
+\begin{equation}
+Kn = keccak256_n(S+n)
+\end{equation}
+\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{Keys}
+\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{Cryptogram}
+\end{itemize}
+
+%\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{Data}
+Now the seller must deploy a public Smart Contract showing the specifications of the data offered, including a description of the data offered, the price of the whole data and the total number of samples it consists of.
+A Hash of the description can be included in place of the full description, in order to save gas while deploying the smart contract.
+
+\begin{itemize}
+\item (A$\rightarrow$SC) H(Description): description hashed.
+\item (A$\rightarrow$SC) N: the total number of samples
+\item (A$\rightarrow$SC) V: number of samples that the smart contract must randomly select in order to B check their quality.
+\item (A$\rightarrow$SC) P: price of the data willing to sell
+% \item H(C): the root of the merkle tree containing the encrypted data. In case we create a smart contract for each buyer.
+\end{itemize}
+
+\subsubsection{Phase 2. Data shipping (seller)}
+Once a buyer has made contact, the seller sends him:
+\begin{itemize}
+\item (A$\rightarrow$B) C: the cryptogram. All data samples encrypted.
+\item (A$\rightarrow$B) H(C): the root of the encrypted data Merkle tree. In addition to its use in the protocol, it will act as a check that bulk data was received correctly.
+\item (A$\rightarrow$B) H(K): the root of the keys Merkle tree that encrypts each sample.
+\end{itemize}
+This items do not provide any relevant information about the data to the buyer, other than already known aspects such as size. The channel used has to be encrypted to avoid a potential attack explained in analysis section (5.1). 
+
+\subsubsection{Phase 3. Selection of the samples to be revealed (buyer)}
+Once the buyer has checked he received the information correctly, he sends to the seller and the smart contract:
+\begin{itemize}
+\item (A$\rightarrow$B) Rv: indexes of the samples the buyer wants to check.
+They will be random samples because the buyer does not have any information about the data.
+\end{itemize}
+
+\subsubsection{Phase 4. Sample keys revelation (seller)}
+The seller sends to the buyer and the Smart Contract: 
+\begin{itemize}
+\item (A$\rightarrow$B) Krv: the keys that decipher the samples that B has chosen.
+\item (A$\rightarrow$B) MP(Krv): the Merkle proofs that ensure these keys are part of the original key tree, and so have not been altered.
+Merkle proofs and KRv provides the root H(K).  
+\end{itemize}
+
+\subsubsection{Phase 5. Payment (buyer)}
+Now, the buyer has all the information needed to make a decision on whether to buy the data or not. Protocol-wise, all he needs is to make sure the keys revealed correspond to the original key tree by using the merkle proofs. Not doing so would make him vulnerable as the decrypted samples may not correspond to the whole data. As to whether the information in the whole data is worth the price, the question goes beyond the scope of this paper. However, some useful insights are posed in the analysis section.
+In case of interest:
+\begin{itemize}
+\item (B$\rightarrow$SC) payment.
+\end{itemize}
+
+\subsubsection{Phase 6. SALT liberation (seller)}
+Once the buyer has made payment, and thus shown interest to buy the data, comes the step:
+\begin{itemize}
+\item (A$\rightarrow$SC) SALT: the random seed from which the keys for each index have been created.
+\end{itemize}
+Now the buyer has access to the key generator and can decrypt the data. He will just check that the sample keys, provided in phase 4 for the indexes chosen in phase 3, have been truly generated using this random seed, as explained in phase 1. If the result is positive, the seller is guaranteed not to have cheated. In this case, the buyer should not do any further action and the payment to the seller will happen once the timeout triggers.
+If it is not possible to obtain all the sample keys with the salt, there exists no guarantee that the samples come from the full data. In this case, the seller should challenge the buyer to prove his honesty.
+
+\subsubsection{Phase 7. Specific key challenge (buyer)}
+Once the buyer finds a key that was not generated correctly, he provides it's index to the Smart Contract:
+\begin{itemize}
+	\item (B$\rightarrow$SC) i: failing key index.
+\end{itemize}
+
+\subsection{Step 8: Challenge resolution (seller)}
+Now the seller must prove the key was generated correctly and was part of the original key set by providing the correspondent Merkle Proofs:
+\begin{itemize}
+	\item (A$\rightarrow$SC) MP(Ki)
+\end{itemize}
+The Smart Contract will generate the key using the salt and the index and then will test if it pertains to the key tree with the Merkle Proof. 
+
+\section{Protocol's implementation}
+\subsection{Ethereum's network and development settings}
+Ethereum network is a decentralized platform that enables the execution of smart contracts (SC) [REF1]. Smart contracts are autonomous programmed applications that are built on top of a custom blockchain [REF2], run without any censorship or third party interference and allows to avoid a counterparty risk. Therefore, it provides a perfect ecosystem to implement a two-way protocol requiring trusted identification, neutral execution of previously agreed-upon checks and payment processing.
+Environment used to deploy and test the solution: Ganache, Metamask, nodejs...
+%TODO Mirar las diapos del postgrau i comentar un poco.
+\subsection{Smart Contract solution}
+Posar aqui la version final del SC. Optional: fer algun diagrama per veure com interactuen el byuer i el seller amb l'SC veient els estats en els que pot estar el SC: Created, SampleRequested, SampleProvided, SampleGenerated, Paid, InactiveNotSample, InactiveOK, InactiveKO, InactiveAbortedS, InactiveAbortedB
+\subsection{Choosing revealing sample size}
+The optimal size of the revealed sample depends on the nature of the data. Mainly, it should be big enough for the buyer to be fairly sure the data is worth the price, given the random nature of the sample selection. Here we provide a working example where the value of the data is binary. This could easily be the case in a simple e-mail database, where the only relevant aspect of a record is if the mail is responsive for advertising or not.
+Given the level of precision (D) at a desired level of confidence (z), the minimum sample size to estimate the proportion of responsive e-mails (being $\pi$ the true proportion) is:
+
+%For mean estimation:
+%\begin{equation}
+%n =  o^2 z^2/ D^2 
+%\end{equation}             
+%(o = true sigma)
+\begin{equation}
+V = \pi(1-\pi)z^2/D^2
+\end{equation}   
+
+Therefore, having a database with 30\% of responsive e-mails, to give the buyer a 95\% confidence on estimating this proportion between 25\% and 35\%, the seller should choose a revealed sample size of: 
+\begin{equation}
+V = 0.3(1-0.3)(1.96)^2/(0.05)^2 = 323
+\end{equation}  
+%A correction exists not(V>>N):
+%\begin{equation}
+%n_c  = \frac{nN}{N+n+1}
+%\end{equation}     
+%(N = population size)
+
+As explained in (Potential attacks, 3-4), without complicating the protocol further, the revealed sample size should also be small enough that the buyer has no incentive to ask for the sample just to obtain it's data without buying. It should also be big enough that the seller has no incentive to repeat the protocol until a buyer chooses a good sample set.
+
+%pag 228 9.4a 9.4b 9.6
+
+%https://books.google.es/books?id=xLq8BAAAQBAJ&pg=PA229&lpg=PA229&dq=database+marketing+optimal+sample+size&source=bl&ots=6fuwwKVeBl&sig=CQ-WNf4mSPTIZKZh2ImglTYyckI&hl=es&sa=X&ved=0ahUKEwjIoc2hz7vaAhWKWBQKHRG8B_sQ6AEILTAA#v=onepage&q=database%20marketing%20optimal%20sample%20size&f=false
+
+\section{Potential attacks}
+\subsection{Eavesdropping - in Phase 2 - by an external party}
+A potential attacker eavesdropping the channel between buyer and seller could get a copy of the cryptogram. Thus, if the protocol finishes correctly, the SALT will be revealed and he could get access to the data for free. To prevent it, the channel must be encrypted as stated earlier. For the same reason, if during a protocol run the buyer receives the cryptogram and then cancels, this cryptogram and the associated SC cannot be reused another time.
+
+\subsection{Data Replication - in Phase 1 - by the seller} 
+When the value of the data in a dataset is not lineal, as is the case in an e-mail database, where duplicated samples are worth nothing, an attack is possible: the seller could make many replicas of the data and merge them. If the amount of different samples before replication is big enough, the samples revealed to the seller will all be provably different. Thus, the seller will not get a fair idea of the database content.
+To avoid this problem, the seller should ensure the data is sorted using the most meaningful variables, and it should ask for some sets of consecutive samples to estimate data replication ratio.
+
+\subsection{Offer Replication - in Phase 1-3 - by the seller} 
+As the data evaluation by B is done on a reduced amount of random samples, there exists some variability on its value perception. Therefore, a malicious seller could try repeating the selling process multiple times until the samples chosen are good enough for the buyer to accept the trade.
+The variability of the value perception in the sample sets depends exclusively on the amount of samples. Therefore, the buyer must ensure there are enough samples provided so that it is not profitable for the seller to repeat the process multiple times, given the fixed costs of the smart contract creation.
+Another possible solution would be for the buyer to block/burn some Ether as a guarantee that the attack is not profitable for him, independently of the sample amount.
+
+\subsection{Request Replication - in Phase 1-5 - by the buyer}
+In a similar way as in the previous attack, a buyer could engage in the protocol multiple times without any intention of buying the whole data, and accumulate free samples during the process. For this to be non-viable, the seller should ensure the value of a revealed sample set is small enough compared to the fixed costs of the buyer, essentially the gas spending when calling the SC in phase 3.
+Like in the previous case, burning/blocking some Ether could be an alternative solution.
+% tunning de la muestra
+
+
+\section{Properties achieved}
+\subsection {Efficiency}
+We consider our protocol fairly efficient because of the following reasons:
+The size of the sample provided to show the whole data value (V) need not be proportional to the size of this whole data (N). It should depend on its nature, as stated in the previous section. This permits to work with big datasets with reduced costs. Furthermore, the interaction with the Ethereum network, the most expensive part, is reduced only to the revealed samples.
+\begin{itemize}
+\item Amount of data transferred off-blockchain: O(N)
+\item Amount of operations in the buyer/seller: O(N)
+\item Amount of data stored in the blockchain: O(1)
+\item Amount of operations in the blockchain: O(log2(N))
+\end{itemize}
+
+\subsection{Provable fairness}
+We consider the samples revealed have no inherent value, which should be close to true. The amount of data revealed this way is not proportional to the size of the whole data, it should just depend on its nature. Thus, if the whole data is big enough, the value of the revealed samples becomes negligible.
+\textbf{From the seller perspective}, the only way he could be cheated is if the buyer has access to the data and he still does not receive the payment. This cannot happen as the seller will only reveal the SALT once the payment is in the Smart Contract, and the Smart Contract will award him the money if it checks he has not deceived in any way with the keys. As previously stated, the Smart Contract is guaranteed to work as expected with very high provability. As the keys are hashes originating from a pseudo-random number, there is no viable way for the seller to obtain them, other than paying.
+\textbf{From the buyer perspective}, as he has checked the sample keys are contained in the key tree, once the SC checks the SALT and payment is done, all the key tree is provably guaranteed to have been generated the same way. The buyer will be able to decipher the whole data in the same way it has deciphered the samples, and those will necessarily be part of the whole. If the check fails, the buyer recovers the money. Again, the SC is provably guaranteed to work as expected. The buyer has chosen the revealed samples indexes while already having the cryptogram so, whatever information it decrypts before payment, has to provably be like the rest of the information.
+
+\subsection{Liveness}
+The protocol incentivizes both parties to complete de process but it is not asynchronous, as one must wait each other response to keep on the protocol. Thus, the protocol can be stuck if one of the participants does not act. For avoiding this problem, both can always abort the process and finalize the protocol if it is the counterparty turn to act. Finalizing and killing the contract lets unblock the situation in spite of it avoids finalize the trade.
+\subsection{Timeliness}
+
+
+\section{Conclusions}
+
+
+
+% \bibliographystyle{unsrt}
+% \bibliography{all}
+
+%\printbibliography
+
+\end{document}
+
