@@ -1,0 +1,22 @@
+{
+  "name": "data-exchange-protocol",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/uohoo/Data-exchange-protocol.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/uohoo/Data-exchange-protocol/issues"
+  },
+  "homepage": "https://github.com/uohoo/Data-exchange-protocol#readme",
+  "dependencies": {
+    "truffle": "^5.0.35"
+  }
+}
