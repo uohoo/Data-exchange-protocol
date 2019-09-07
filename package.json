@@ -17,6 +17,14 @@
   },
   "homepage": "https://github.com/uohoo/Data-exchange-protocol#readme",
   "dependencies": {
+    "openzeppelin-solidity": "^2.3.0",
     "truffle": "^5.0.35"
+  },
+  "devDependencies": {
+    "eslint": "^6.3.0",
+    "eslint-config-airbnb-base": "^14.0.0",
+    "eslint-plugin-import": "^2.18.2",
+    "eslint-plugin-mocha": "^6.1.0",
+    "mocha": "^6.2.0"
   }
 }
