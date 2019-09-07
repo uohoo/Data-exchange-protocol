@@ -4,7 +4,7 @@
 //solium-disable linebreak-style
 pragma solidity ^0.5.0;
 
-import '../node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol';
+import '../node_modules/openzeppelin-solidity/contracts/cryptography/MerkleProof.sol';
 
 contract DataMarket {
 
@@ -156,6 +156,9 @@ contract DataMarket {
     function checkMerkleProof(bytes32 _i, bytes32 value, bytes32[] memory _MPi, bytes32 root) private view inState(State.SaltReleased) returns (bool){
         // bytes32 c;
         bytes32 leaf = keccak256(abi.encodePacked(value));
+        
+        // verify();
+        
         // TODO: Rewrite check merkle proof depending on merkle tree used
         // for (c; c < bytes32(_MPi.length); bytes32(uint(c) + 1) ) {
         //     if ((_i & (2 ** c)) == 0){
