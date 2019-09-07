@@ -331,3 +331,6 @@ ASALocalRun/
 
 # npm
 package-lock.json
+
+# truffle
+build
