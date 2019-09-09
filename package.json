@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/uohoo/Data-exchange-protocol#readme",
   "dependencies": {
+    "circomlib": "0.0.16",
     "openzeppelin-solidity": "^2.3.0",
     "truffle": "^5.0.35"
   },
