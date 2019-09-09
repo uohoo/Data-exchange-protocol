@@ -129,7 +129,8 @@ contract DataMarket {
      * @dev Buyer aborts the protocol
      */
     function buyerRefund() public onlyBuyer {
-        require(((state == State.Paid) && (block.number > block_paid + nblocks_timeout)) || ((state == State.Challenged) && (block.number > block_challenged + nblocks_timeout)), 'state is not valid');
+        require(((state == State.Paid) && (block.number > block_paid + nblocks_timeout)) ||
+         ((state == State.Challenged) && (block.number > block_challenged + nblocks_timeout)), 'state is not valid');
         state = State.BuyerRefunded;
         emit StateInfo(state);
     }
@@ -153,7 +154,8 @@ contract DataMarket {
      * @param _MPi merkle tree proof
      * @param root root
      */
-    function checkMerkleProof(bytes32 _i, bytes32 value, bytes32[] memory _MPi, bytes32 root) private view inState(State.SaltReleased) returns (bool){
+    function checkMerkleProof(bytes32 _i, bytes32 value, bytes32[] memory _MPi, bytes32 root)
+     private view inState(State.SaltReleased) returns (bool){
         // bytes32 c;
         bytes32 leaf = keccak256(abi.encodePacked(value));
 
