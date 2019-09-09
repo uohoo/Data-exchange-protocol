@@ -13,19 +13,19 @@ contract DataMarket {
     enum State { Created, Paid, SaltReleased, Challenged, SellerPaid, BuyerRefunded, Cancelled }
     State public state;
 
-    bytes32 public MRC; //commitment del criptograma
-    bytes32 public MRK; //commitment de les claus
+    bytes32 public root_cryptogram; //commitment del criptograma
+    bytes32 public root_keys; //commitment de les claus
 
-    bytes32 public n; //no registres de la BBDD
+    uint256 public num_samples; //num registres de la BBDD
     uint256 public price; //preu
     bytes32 public index; //index de la key pel challenge
 
-    bytes32 public salt;
+    bytes32 public salt; //seed, decrypt all the samples
 
-    uint256 public tpaid;
-    uint256 public tsalt;
-    uint256 public tchallenge;
-    uint256 public timeout = 10;
+    uint256 public block_paid; //Block which the payment is sent
+    uint256 public block_salt_revealed; //Block which the salt is revealed/sent
+    uint256 public block_challenged; //Block which challenge is sent
+    uint256 public nblocks_timeout; //Max number of blocks to execute action
 
     event StateInfo(State state);
 
@@ -56,25 +56,25 @@ contract DataMarket {
     /**
      * @dev Secures that execution is done after a time selected
      */
-    modifier onlyAfter(uint _time) {
-        require(block.timestamp > _time, 'timeout not reached'); // now equival a block.timestamp
+    modifier onlyAfter(uint block) {
+        require(block.number > block, 'timeout not reached'); // now equival a block.timestamp
         _;
     }
 
     /**
-     * @dev Description, N, Ncheck and price saved in the smart contract during the construction
+     * @dev Merkle root of the cryptograms, Merkle root of the keys, N and price saved in the smart contract during the construction
      *
-     * @param _p Hash of the description provided by the seller (deployer)
-     * @param _n Number of total data samples
-     * @param _MRC Number of samples to be revealed
-     * @param _MRK Price of the whole data
+     * @param _n Number of samples to be revealed
+     * @param _p Price of the whole data
+     * @param _MRC Merkle root of the cryptograms
+     * @param _MRK Merkle root of the keys
      */
-    constructor(bytes32 _n, uint256 _p, bytes32 _MRC, bytes32 _MRK) public payable {
+    constructor(uint256 _n, uint256 _p, bytes32 _MRC, bytes32 _MRK) public payable {
         seller = msg.sender;
-        n = _n;
+        num_samples = _n;
         price = _p;
-        MRC = _MRC;
-        MRK = _MRK;
+        root_cryptogram = _MRC;
+        root_keys = _MRK;
         //creation_block = block.number;
     }
 
@@ -84,7 +84,7 @@ contract DataMarket {
     function payB() public payable inState(State.Created) onlyBuyer() {
         if (msg.value >= price) {
             buyer = msg.sender;
-            tpaid = block.timestamp;
+            block_paid = block.number;
             state = State.Paid;
             emit StateInfo(state);
         } else {
@@ -99,7 +99,7 @@ contract DataMarket {
      */
     function saltRelease(bytes32 _salt) public payable inState(State.Paid) onlySeller() {
         salt = _salt;
-        tsalt = block.timestamp;
+        block_salt_revealed = block.number;
         state = State.SaltReleased;
         emit StateInfo(state);
     }
@@ -119,7 +119,7 @@ contract DataMarket {
      * @dev seller pays
      */
     function sellerPay() public onlySeller{
-        require((state == State.SaltReleased) && (block.timestamp > tsalt + timeout), 'state is not valid');
+        require((state == State.SaltReleased) && (block.number > block_salt_revealed + nblocks_timeout), 'state is not valid');
         state = State.SellerPaid;
         emit StateInfo(state);
         selfdestruct(seller);
@@ -129,7 +129,7 @@ contract DataMarket {
      * @dev Buyer aborts the protocol
      */
     function buyerRefund() public onlyBuyer {
-        require(((state == State.Paid) && (block.timestamp > tpaid + timeout)) || ((state == State.Challenged) && (block.timestamp > tchallenge + timeout)), 'state is not valid');
+        require(((state == State.Paid) && (block.number > block_paid + nblocks_timeout)) || ((state == State.Challenged) && (block.number > block_challenged + nblocks_timeout)), 'state is not valid');
         state = State.BuyerRefunded;
         emit StateInfo(state);
     }
@@ -141,7 +141,7 @@ contract DataMarket {
      */
     function challenge(bytes32 _i) public inState(State.SaltReleased) onlyBuyer() {
         index = _i;
-        tchallenge = block.timestamp;
+        block_challenged = block.number;
         state = State.Challenged;
         emit StateInfo(state);
     }
@@ -156,9 +156,9 @@ contract DataMarket {
     function checkMerkleProof(bytes32 _i, bytes32 value, bytes32[] memory _MPi, bytes32 root) private view inState(State.SaltReleased) returns (bool){
         // bytes32 c;
         bytes32 leaf = keccak256(abi.encodePacked(value));
-        
+
         // verify();
-        
+
         // TODO: Rewrite check merkle proof depending on merkle tree used
         // for (c; c < bytes32(_MPi.length); bytes32(uint(c) + 1) ) {
         //     if ((_i & (2 ** c)) == 0){
