@@ -11,6 +11,10 @@ Smart contracts tests are allocated in the following directory: `test/contracts`
 ```
 npm install -g ganache-cli
 ```
+```
+npm install -g truffle
+```
+
 - Local installation:
   - the package is included in `package.json`. Therefore by typing:
 ```

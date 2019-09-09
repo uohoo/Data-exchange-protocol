@@ -56,8 +56,8 @@ contract DataMarket {
     /**
      * @dev Secures that execution is done after a time selected
      */
-    modifier onlyAfter(uint block) {
-        require(block.number > block, 'timeout not reached'); // now equival a block.timestamp
+    modifier onlyAfter(uint256 _block) {
+        require(block.number > _block, 'timeout not reached'); // now equival a block.timestamp
         _;
     }
 
@@ -151,12 +151,12 @@ contract DataMarket {
         // TODO: Checks that the index is coherent with the MPKi
         bool checkMPKposition = checkMerkleProofposition(_i, _MPKi);
         bytes32 ki = bytes32(keccak256(bytes32(uint(salt) + (uint(_i)))));
-        bool checkconsumer = False;
-        if (ki == key_challenged && checkMPKposition){
-            checkconsumer = True;
+        bool checkconsumer = false;
+        if (ki == _ki && checkMPKposition){
+            checkconsumer = true;
         }
         bool checkMPK = checkMerkleProof(_i, ki, _MPKi, root_keys);
-        if (checkconsumer && not(checkMPK)){
+        if (checkconsumer && !(checkMPK)){
             state = State.BuyerRefunded;
             emit StateInfo(state);
             selfdestruct(buyer);
@@ -200,7 +200,7 @@ contract DataMarket {
      */
     function checkMerkleProofposition(bytes32 _i, bytes32 MPi)
      private view inState(State.SaltReleased) returns (bool){
-        return True;
+        return true;
     }
 
     // function checkFormat(bytes32[] memory value) private pure returns (bool){
