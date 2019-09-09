@@ -126,24 +126,45 @@ contract DataMarket {
     }
 
     /**
-     * @dev Buyer aborts the protocol
+     * @dev Buyer aborts the protocol and is reimbursed
      */
     function buyerRefund() public onlyBuyer {
-        require(((state == State.Paid) && (block.number > block_paid + nblocks_timeout)) ||
-         ((state == State.Challenged) && (block.number > block_challenged + nblocks_timeout)), 'state is not valid');
+        require(((state == State.Paid) && (block.number > block_paid + nblocks_timeout)), 'state is not valid');
+        //  ||((state == State.Challenged) && (block.number > block_challenged + nblocks_timeout)), 'state is not valid');
         state = State.BuyerRefunded;
         emit StateInfo(state);
     }
 
 
     /**
-     * @dev challenge
+     * @dev The buyer sents a sample(i), ki and MPKi that the SC must check. If the buyer is right the paid is reimbursed and if not the seller gets the payment.
      * @param _i index key
+     * @param _ki failing key
+     * @param _MPKi the merkle proof for the affected key
      */
-    function challenge(bytes32 _i) public inState(State.SaltReleased) onlyBuyer() {
-        index = _i;
-        block_challenged = block.number;
-        state = State.Challenged;
+    function challenge(uint256 _i,bytes32 _ki, bytes32 _MPKi) public inState(State.SaltReleased) onlyBuyer() {
+        // index = _i;
+        // key_challenged = _ki;
+        // proof_key = _MPKi;
+        // block_challenged = block.number;
+        // state = State.Challenged;
+        // TODO: Checks that the index is coherent with the MPKi
+        bool checkMPKposition = checkMerkleProofposition(_i, _MPKi);
+        bytes32 ki = bytes32(keccak256(bytes32(uint(salt) + (uint(_i)))));
+        bool checkconsumer = False;
+        if (ki == key_challenged && checkMPKposition){
+            checkconsumer = True;
+        }
+        bool checkMPK = checkMerkleProof(_i, ki, _MPKi, root_keys);
+        if (checkconsumer && not(checkMPK)){
+            state = State.BuyerRefunded;
+            emit StateInfo(state);
+            selfdestruct(buyer);
+        }else{
+            state = State.SellerPaid;
+            emit StateInfo(state);
+            selfdestruct(seller);
+        }
         emit StateInfo(state);
     }
 
@@ -172,31 +193,49 @@ contract DataMarket {
         return root == leaf;
     }
 
-    function checkFormat(bytes32[] memory value) private pure returns (bool){
-        // Simplest format: first position = 0
-        return value[0] == 0;
+    /**
+     * @dev check merkle proof position coherent with the index
+     * @param _i indexç
+     * @param _MPi merkle tree proof
+     */
+    function checkMerkleProofposition(bytes32 _i, bytes32 MPi)
+     private view inState(State.SaltReleased) returns (bool){
+        return True;
     }
 
-    function solveComplaint(
-        bytes32 _i,
-        bytes32[] memory _MPKi,
-        bytes32 _ci,
-        bytes32[] memory _MPCi
-        ) public inState(State.SaltReleased) onlyBuyer() {
+    // function checkFormat(bytes32[] memory value) private pure returns (bool){
+    //     // Simplest format: first position = 0
+    //     return value[0] == 0;
+    // }
 
-        bytes32 ki = 0;
-        // bytes32 ki = bytes32(keccak256(bytes32(uint(salt) + (uint(_i)))));
-        bool checkMPK = checkMerkleProof(_i, ki, _MPKi, MRK);
-        // bool checkF = checkFormat(_ci, ki);
-        // TODO: CheckFormat ???
-        if (checkMPK && checkMPK){
-            state = State.SellerPaid;
-            emit StateInfo(state);
-            selfdestruct(seller);
-        }else{
-            state = State.BuyerRefunded;
-            emit StateInfo(state);
-            selfdestruct(buyer);
-        }
-    }
+    // /**
+    //  * @dev check merkle proof
+    //  * The sample must generate the k_i with the salt and to be included in the i position of keys merkle tree
+    //  * @param _i index
+    //  * @param value value
+    //  * @param _MPi merkle tree proof
+    //  * @param root root
+    //  */
+    // function solveComplaint(
+    //     bytes32 _i,
+    //     bytes32[] memory _MPKi,
+    //     bytes32 _ci,
+    //     bytes32[] memory _MPCi
+    //     ) public inState(State.SaltReleased) onlyBuyer() {
+
+    //     bytes32 ki = 0;
+    //     // bytes32 ki = bytes32(keccak256(bytes32(uint(salt) + (uint(_i)))));
+    //     bool checkMPK = checkMerkleProof(_i, ki, _MPKi, MRK);
+    //     // bool checkF = checkFormat(_ci, ki);
+    //     // TODO: CheckFormat ???
+    //     if (checkMPK && checkMPK){
+    //         state = State.SellerPaid;
+    //         emit StateInfo(state);
+    //         selfdestruct(seller);
+    //     }else{
+    //         state = State.BuyerRefunded;
+    //         emit StateInfo(state);
+    //         selfdestruct(buyer);
+    //     }
+    // }
 }
