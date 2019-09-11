@@ -1,12 +1,10 @@
+/* solium-disable linebreak-style */
+pragma solidity ^0.5.0;
+
 /**
  * Description: Implements a data commerce with representative sample checking protocol
  */
-//solium-disable linebreak-style
-pragma solidity ^0.5.0;
-
-import '../node_modules/openzeppelin-solidity/contracts/cryptography/MerkleProof.sol';
-
-contract DataMarket {
+contract DataMarket is DataMarketHelpers{
 
     address payable public seller; //owner
     address payable public buyer;
@@ -28,6 +26,14 @@ contract DataMarket {
     uint256 public nblocks_timeout; //Max number of blocks to execute action
 
     event StateInfo(State state);
+
+    /**
+     * @dev Retrieve block number
+     * @return current block number
+     */
+    function getBlockNumber() public view returns (uint) {
+        return block.number;
+    }
 
     /**
      * @dev only seller
@@ -57,7 +63,7 @@ contract DataMarket {
      * @dev Secures that execution is done after a time selected
      */
     modifier onlyAfter(uint256 _block) {
-        require(block.number > _block, 'timeout not reached'); // now equival a block.timestamp
+        require(getBlockNumber() > _block, 'timeout not reached'); // now equival a block.timestamp
         _;
     }
 
@@ -75,7 +81,7 @@ contract DataMarket {
         price = _p;
         root_cryptogram = _MRC;
         root_keys = _MRK;
-        //creation_block = block.number;
+        //creation_block = getBlockNumber();
     }
 
     /**
@@ -84,7 +90,7 @@ contract DataMarket {
     function payB() public payable inState(State.Created) onlyBuyer() {
         if (msg.value >= price) {
             buyer = msg.sender;
-            block_paid = block.number;
+            block_paid = getBlockNumber();
             state = State.Paid;
             emit StateInfo(state);
         } else {
@@ -99,7 +105,7 @@ contract DataMarket {
      */
     function saltRelease(bytes32 _salt) public payable inState(State.Paid) onlySeller() {
         salt = _salt;
-        block_salt_revealed = block.number;
+        block_salt_revealed = getBlockNumber();
         state = State.SaltReleased;
         emit StateInfo(state);
     }
@@ -119,7 +125,7 @@ contract DataMarket {
      * @dev seller pays
      */
     function sellerPay() public onlySeller{
-        require((state == State.SaltReleased) && (block.number > block_salt_revealed + nblocks_timeout), 'state is not valid');
+        require((state == State.SaltReleased) && (getBlockNumber() > block_salt_revealed + nblocks_timeout), 'state is not valid');
         state = State.SellerPaid;
         emit StateInfo(state);
         selfdestruct(seller);
@@ -129,8 +135,8 @@ contract DataMarket {
      * @dev Buyer aborts the protocol and is reimbursed
      */
     function buyerRefund() public onlyBuyer {
-        require(((state == State.Paid) && (block.number > block_paid + nblocks_timeout)), 'state is not valid');
-        //  ||((state == State.Challenged) && (block.number > block_challenged + nblocks_timeout)), 'state is not valid');
+        require(((state == State.Paid) && (getBlockNumber() > block_paid + nblocks_timeout)), 'state is not valid');
+        //  ||((state == State.Challenged) && (getBlockNumber() > block_challenged + nblocks_timeout)), 'state is not valid');
         state = State.BuyerRefunded;
         emit StateInfo(state);
     }
@@ -146,7 +152,7 @@ contract DataMarket {
         // index = _i;
         // key_challenged = _ki;
         // proof_key = _MPKi;
-        // block_challenged = block.number;
+        // block_challenged = getBlockNumber();
         // state = State.Challenged;
         // TODO: Checks that the index is coherent with the MPKi
         bool checkMPKposition = checkMerkleProofposition(_i, _MPKi);
@@ -168,30 +174,30 @@ contract DataMarket {
         emit StateInfo(state);
     }
 
-    /**
-     * @dev check merkle proof
-     * @param _i index
-     * @param value value
-     * @param _MPi merkle tree proof
-     * @param root root
-     */
-    function checkMerkleProof(bytes32 _i, bytes32 value, bytes32[] memory _MPi, bytes32 root)
-     private view inState(State.SaltReleased) returns (bool){
-        // bytes32 c;
-        bytes32 leaf = keccak256(abi.encodePacked(value));
+    // /**
+    //  * @dev check merkle proof
+    //  * @param _i index
+    //  * @param value value
+    //  * @param _MPi merkle tree proof
+    //  * @param root root
+    //  */
+    // function checkMerkleProof(bytes32 _i, bytes32 value, bytes32[] memory _MPi, bytes32 root)
+    //  private view inState(State.SaltReleased) returns (bool){
+    //     // bytes32 c;
+    //     bytes32 leaf = keccak256(abi.encodePacked(value));
 
-        // verify();
+    //     // verify();
 
-        // TODO: Rewrite check merkle proof depending on merkle tree used
-        // for (c; c < bytes32(_MPi.length); bytes32(uint(c) + 1) ) {
-        //     if ((_i & (2 ** c)) == 0){
-        //         leaf = keccak256(leaf.sub(_MPi[c]));
-        //     }else{
-        //         leaf = keccak256(_MPi[c].sub(leaf));
-        //     }
-        // }
-        return root == leaf;
-    }
+    //     // TODO: Rewrite check merkle proof depending on merkle tree used
+    //     // for (c; c < bytes32(_MPi.length); bytes32(uint(c) + 1) ) {
+    //     //     if ((_i & (2 ** c)) == 0){
+    //     //         leaf = keccak256(leaf.sub(_MPi[c]));
+    //     //     }else{
+    //     //         leaf = keccak256(_MPi[c].sub(leaf));
+    //     //     }
+    //     // }
+    //     return root == leaf;
+    // }
 
     /**
      * @dev check merkle proof position coherent with the index
