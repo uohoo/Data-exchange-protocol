@@ -1,21 +1,44 @@
 pragma solidity ^0.5.0;
 
+ /**
+ * @dev Interface poseidon hash function
+ */
+contract PoseidonUnit {
+  function poseidon(uint256[] memory) public pure returns(uint256) {}
+}
+
 /**
  * @dev DataMarket helper functions
  */
-library DataMarketHelpers {
+
+contract DataMarketHelpers {
+
+  PoseidonUnit insPoseidonUnit;
+
+  constructor(address _poseidonAddress) public {
+    insPoseidonUnit = PoseidonUnit(_poseidonAddress);
+  }
 
   /**
-   * @dev hash for sparse merkle tree nodes
+   * @dev hash poseidon multi-input elements
+   * @param inputs input element array
+   * @return poseidon hash
+   */
+  function hashGeneric(uint256[] memory inputs) internal view returns (uint256){
+    return insPoseidonUnit.poseidon(inputs);
+  }
+
+  /**
+   * @dev hash poseidon for sparse merkle tree nodes
    * @param left input element array
    * @param right input element array
    * @return poseidon hash
    */
-  function hashNode(uint256 left, uint256 right) internal pure returns (uint256){
+  function hashNode(uint256 left, uint256 right) internal view returns (uint256){
     uint256[] memory inputs = new uint256[](2);
     inputs[0] = left;
     inputs[1] = right;
-    return uint256(keccak256(abi.encodePacked(inputs)));
+    return hashGeneric(inputs);
   }
 
   /**
@@ -24,12 +47,12 @@ library DataMarketHelpers {
    * @param value input element array
    * @return poseidon hash1
    */
-  function hashFinalNode(uint256 key, uint256 value) internal pure returns (uint256){
+  function hashFinalNode(uint256 key, uint256 value) internal view returns (uint256){
     uint256[] memory inputs = new uint256[](3);
     inputs[0] = key;
     inputs[1] = value;
     inputs[2] = 1;
-    return uint256(keccak256(abi.encodePacked(inputs)));
+    return hashGeneric(inputs);
   }
 
   /**
@@ -46,7 +69,7 @@ library DataMarketHelpers {
    */
   function smtVerifier(uint256 root, uint256[] memory siblings,
     uint256 key, uint256 value, uint256 oldKey, uint256 oldValue,
-    bool isNonExistence, bool isOld, uint256 maxLevels) internal pure returns (bool){
+    bool isNonExistence, bool isOld, uint256 maxLevels) internal view returns (bool){
 
     // Step 1: check if proof is non-existence non-empty
     uint256 newHash;

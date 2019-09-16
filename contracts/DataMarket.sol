@@ -1,6 +1,8 @@
 /* solium-disable linebreak-style */
 pragma solidity ^0.5.0;
 
+import "./lib/DataMarketHelpers.sol";
+
 /**
  * Description: Implements a data commerce with representative sample checking protocol
  */
@@ -75,7 +77,12 @@ contract DataMarket is DataMarketHelpers{
      * @param _MRC Merkle root of the cryptograms
      * @param _MRK Merkle root of the keys
      */
-    constructor(uint256 _n, uint256 _p, bytes32 _MRC, bytes32 _MRK) public payable {
+    constructor(uint256 _n,
+      uint256 _p,
+      bytes32 _MRC,
+      bytes32 _MRK,
+      address _poseidonContract
+    ) public DataMarketHelpers(_poseidonContract){
         seller = msg.sender;
         num_samples = _n;
         price = _p;
@@ -110,7 +117,6 @@ contract DataMarket is DataMarketHelpers{
         emit StateInfo(state);
     }
 
-
     /**
      * @dev Seller aborts the protocol
      *
@@ -141,28 +147,16 @@ contract DataMarket is DataMarketHelpers{
         emit StateInfo(state);
     }
 
-
     /**
      * @dev The buyer sents a sample(i), ki and MPKi that the SC must check. If the buyer is right the paid is reimbursed and if not the seller gets the payment.
      * @param _i index key
      * @param _ki failing key
      * @param _MPKi the merkle proof for the affected key
      */
-    function challenge(uint256 _i,bytes32 _ki, bytes32 _MPKi) public inState(State.SaltReleased) onlyBuyer() {
-        // index = _i;
-        // key_challenged = _ki;
-        // proof_key = _MPKi;
-        // block_challenged = getBlockNumber();
-        // state = State.Challenged;
-        // TODO: Checks that the index is coherent with the MPKi
-        bool checkMPKposition = checkMerkleProofposition(_i, _MPKi);
-        bytes32 ki = bytes32(keccak256(bytes32(uint(salt) + (uint(_i)))));
-        bool checkconsumer = false;
-        if (ki == _ki && checkMPKposition){
-            checkconsumer = true;
-        }
-        bool checkMPK = checkMerkleProof(_i, ki, _MPKi, root_keys);
-        if (checkconsumer && !(checkMPK)){
+    function challenge(uint256 _i,bytes32 _ki, uint256[] memory _MPKi) public inState(State.SaltReleased) onlyBuyer() {
+        bytes32 ki = keccak256(abi.encodePacked(salt, _ki));
+        bool checkMPK = smtVerifier(uint256(root_keys), _MPKi, _i, uint256(ki), 0, 0, false, false, 24);
+        if (checkMPK == false){
             state = State.BuyerRefunded;
             emit StateInfo(state);
             selfdestruct(buyer);
@@ -173,75 +167,4 @@ contract DataMarket is DataMarketHelpers{
         }
         emit StateInfo(state);
     }
-
-    // /**
-    //  * @dev check merkle proof
-    //  * @param _i index
-    //  * @param value value
-    //  * @param _MPi merkle tree proof
-    //  * @param root root
-    //  */
-    // function checkMerkleProof(bytes32 _i, bytes32 value, bytes32[] memory _MPi, bytes32 root)
-    //  private view inState(State.SaltReleased) returns (bool){
-    //     // bytes32 c;
-    //     bytes32 leaf = keccak256(abi.encodePacked(value));
-
-    //     // verify();
-
-    //     // TODO: Rewrite check merkle proof depending on merkle tree used
-    //     // for (c; c < bytes32(_MPi.length); bytes32(uint(c) + 1) ) {
-    //     //     if ((_i & (2 ** c)) == 0){
-    //     //         leaf = keccak256(leaf.sub(_MPi[c]));
-    //     //     }else{
-    //     //         leaf = keccak256(_MPi[c].sub(leaf));
-    //     //     }
-    //     // }
-    //     return root == leaf;
-    // }
-
-    /**
-     * @dev check merkle proof position coherent with the index
-     * @param _i indexç
-     * @param _MPi merkle tree proof
-     */
-    function checkMerkleProofposition(bytes32 _i, bytes32 MPi)
-     private view inState(State.SaltReleased) returns (bool){
-        return true;
-    }
-
-    // function checkFormat(bytes32[] memory value) private pure returns (bool){
-    //     // Simplest format: first position = 0
-    //     return value[0] == 0;
-    // }
-
-    // /**
-    //  * @dev check merkle proof
-    //  * The sample must generate the k_i with the salt and to be included in the i position of keys merkle tree
-    //  * @param _i index
-    //  * @param value value
-    //  * @param _MPi merkle tree proof
-    //  * @param root root
-    //  */
-    // function solveComplaint(
-    //     bytes32 _i,
-    //     bytes32[] memory _MPKi,
-    //     bytes32 _ci,
-    //     bytes32[] memory _MPCi
-    //     ) public inState(State.SaltReleased) onlyBuyer() {
-
-    //     bytes32 ki = 0;
-    //     // bytes32 ki = bytes32(keccak256(bytes32(uint(salt) + (uint(_i)))));
-    //     bool checkMPK = checkMerkleProof(_i, ki, _MPKi, MRK);
-    //     // bool checkF = checkFormat(_ci, ki);
-    //     // TODO: CheckFormat ???
-    //     if (checkMPK && checkMPK){
-    //         state = State.SellerPaid;
-    //         emit StateInfo(state);
-    //         selfdestruct(seller);
-    //     }else{
-    //         state = State.BuyerRefunded;
-    //         emit StateInfo(state);
-    //         selfdestruct(buyer);
-    //     }
-    // }
 }
